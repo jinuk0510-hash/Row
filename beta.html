@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rowing Training — Closed Beta</title>
+<style>
+  /* ─── Reset / Base ─── */
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg:        #0b1622;
+    --bg-soft:   #11233a;
+    --card:      #16293f;
+    --accent:    #4fd1c5;
+    --accent-2:  #38b2ac;
+    --text:      #e6edf3;
+    --text-mute: #9fb3c8;
+    --border:    #233a55;
+    --danger:    #ff6b6b;
+    --success:   #51cf66;
+  }
+  html, body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+                 "Helvetica Neue", Arial, sans-serif;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: var(--accent); text-decoration: none; }
+  .container { max-width: 960px; margin: 0 auto; padding: 0 24px; }
+
+  /* ─── Hero ─── */
+  .hero {
+    background: linear-gradient(135deg, #0b1622 0%, #15324d 100%);
+    padding: 96px 0 80px;
+    text-align: center;
+    border-bottom: 1px solid var(--border);
+  }
+  .hero .badge {
+    display: inline-block;
+    background: rgba(79, 209, 197, 0.15);
+    color: var(--accent);
+    padding: 6px 14px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 20px;
+    letter-spacing: 0.5px;
+  }
+  .hero h1 {
+    font-size: 48px;
+    font-weight: 800;
+    letter-spacing: -1px;
+    margin-bottom: 16px;
+    line-height: 1.2;
+  }
+  .hero h1 .accent { color: var(--accent); }
+  .hero p.sub {
+    font-size: 18px;
+    color: var(--text-mute);
+    max-width: 640px;
+    margin: 0 auto 36px;
+  }
+  .btn-primary {
+    display: inline-block;
+    background: var(--accent);
+    color: #0b1622;
+    padding: 14px 28px;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 16px;
+    border: none;
+    cursor: pointer;
+    transition: transform 0.1s, background 0.2s;
+  }
+  .btn-primary:hover { background: var(--accent-2); transform: translateY(-1px); }
+  .btn-primary:active { transform: translateY(0); }
+
+  /* ─── Sections ─── */
+  section { padding: 72px 0; }
+  section h2 {
+    font-size: 32px;
+    font-weight: 700;
+    margin-bottom: 12px;
+    letter-spacing: -0.5px;
+  }
+  section p.section-sub {
+    color: var(--text-mute);
+    margin-bottom: 40px;
+    font-size: 16px;
+  }
+
+  /* ─── Features ─── */
+  .features {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+  }
+  .feature {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 28px 24px;
+    transition: border-color 0.2s, transform 0.2s;
+  }
+  .feature:hover {
+    border-color: var(--accent);
+    transform: translateY(-2px);
+  }
+  .feature .icon { font-size: 32px; margin-bottom: 16px; }
+  .feature h3 { font-size: 18px; margin-bottom: 8px; }
+  .feature p { color: var(--text-mute); font-size: 14px; }
+
+  /* ─── Why ─── */
+  .why { background: var(--bg-soft); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+  .why ul { list-style: none; padding: 0; }
+  .why li {
+    padding: 16px 0;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+  }
+  .why li:last-child { border-bottom: none; }
+  .why .check { color: var(--accent); font-weight: 700; flex-shrink: 0; margin-top: 2px; }
+  .why .ref-name { font-weight: 600; }
+  .why .ref-link { font-size: 13px; color: var(--text-mute); margin-top: 4px; }
+
+  /* ─── Form ─── */
+  .signup { text-align: center; }
+  .signup .signup-count {
+    display: inline-block;
+    background: rgba(79, 209, 197, 0.1);
+    border: 1px solid var(--accent);
+    border-radius: 999px;
+    padding: 8px 20px;
+    color: var(--accent);
+    font-weight: 600;
+    margin-bottom: 32px;
+  }
+  form {
+    max-width: 480px;
+    margin: 0 auto;
+    text-align: left;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 36px;
+  }
+  .field { margin-bottom: 20px; }
+  .field label {
+    display: block;
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 6px;
+    color: var(--text);
+  }
+  .field .required { color: var(--danger); margin-left: 2px; }
+  .field input, .field select, .field textarea {
+    width: 100%;
+    background: var(--bg);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: 14px;
+    font-family: inherit;
+    transition: border-color 0.2s;
+  }
+  .field input:focus, .field select:focus, .field textarea:focus {
+    outline: none;
+    border-color: var(--accent);
+  }
+  .field textarea { resize: vertical; min-height: 80px; }
+  .checkbox-field {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    margin-bottom: 24px;
+    font-size: 13px;
+    color: var(--text-mute);
+  }
+  .checkbox-field input { width: auto; margin-top: 3px; }
+  button[type="submit"] {
+    width: 100%;
+    background: var(--accent);
+    color: #0b1622;
+    border: none;
+    padding: 14px;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  button[type="submit"]:hover { background: var(--accent-2); }
+  .form-msg {
+    text-align: center;
+    padding: 12px;
+    border-radius: 8px;
+    margin-top: 16px;
+    font-size: 14px;
+    display: none;
+  }
+  .form-msg.error { background: rgba(255, 107, 107, 0.15); color: var(--danger); display: block; }
+  .form-msg.success { background: rgba(81, 207, 102, 0.15); color: var(--success); display: block; }
+
+  /* ─── Footer ─── */
+  footer {
+    padding: 32px 0;
+    text-align: center;
+    color: var(--text-mute);
+    font-size: 13px;
+    border-top: 1px solid var(--border);
+  }
+  footer a { color: var(--accent); }
+
+  /* ─── Responsive ─── */
+  @media (max-width: 720px) {
+    .hero h1 { font-size: 34px; }
+    .hero p.sub { font-size: 16px; }
+    .features { grid-template-columns: 1fr; }
+    section { padding: 56px 0; }
+    section h2 { font-size: 26px; }
+    form { padding: 24px; }
+  }
+</style>
+</head>
+<body>
+
+  <!-- Hero -->
+  <header class="hero">
+    <div class="container">
+      <span class="badge">🚣 CLOSED BETA</span>
+      <h1>Your <span class="accent">2k time</span><br>becomes your weekly plan</h1>
+      <p class="sub">
+        A personal training coach for indoor rowers (Concept2 ergometer).
+        Built on the proven Pete Plan and Concept2's official watts formula.
+      </p>
+      <a href="#signup"><button class="btn-primary">Launch the App</button></a>
+    </div>
+  </header>
+
+  <!-- Features -->
+  <section>
+    <div class="container">
+      <h2>Core Features</h2>
+      <p class="section-sub">From logging to prescription — on one screen.</p>
+      <div class="features">
+        <div class="feature">
+          <div class="icon">🏆</div>
+          <h3>PR Tracking by Distance</h3>
+          <p>Automatically manage your personal records for 500m, 1k, 2k, 5k, and 10k.</p>
+        </div>
+        <div class="feature">
+          <div class="icon">🔥</div>
+          <h3>Pete Plan, Auto-Prescribed</h3>
+          <p>A 3-week rotation of three hard sessions and two steady-state sessions, paced to your current 2k.</p>
+        </div>
+        <div class="feature">
+          <div class="icon">⚡</div>
+          <h3>Watts, Quantified</h3>
+          <p>Concept2's official formula converts pace into watts. See exactly why 1:35 → 1:30 means +18% power.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Why -->
+  <section class="why">
+    <div class="container">
+      <h2>Why we're different</h2>
+      <p class="section-sub">No homebrew algorithms. Only verified references.</p>
+      <ul>
+        <li>
+          <span class="check">✓</span>
+          <div>
+            <div class="ref-name">Pete Plan (by Pete Marston)</div>
+            <div>The most widely validated self-coached training plan among indoor rowers worldwide.</div>
+            <div class="ref-link">Source: thepeteplan.wordpress.com</div>
+          </div>
+        </li>
+        <li>
+          <span class="check">✓</span>
+          <div>
+            <div class="ref-name">Concept2's Official Watts Formula</div>
+            <div>W = 2.80 / (pace_sec_per_meter)³ — the conversion published directly by the manufacturer.</div>
+            <div class="ref-link">Source: concept2.com</div>
+          </div>
+        </li>
+        <li>
+          <span class="check">✓</span>
+          <div>
+            <div class="ref-name">Targets only update when you say so</div>
+            <div>Your training pace doesn't get harder automatically just because you set a new PR. You stay in control.</div>
+          </div>
+        </li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- Launch -->
+  <section id="signup" class="signup">
+    <div class="container">
+      <h2>Launch the App</h2>
+      <p class="section-sub">Closed beta — direct access, no sign-up required.</p>
+      <a href="index.html">
+        <button class="btn-primary" style="font-size:18px; padding:16px 36px;">
+          🚀 Open Rowing Training
+        </button>
+      </a>
+      <p style="margin-top:24px; color:var(--text-mute); font-size:13px;">
+        No installation needed. Data is stored locally in your browser.
+      </p>
+    </div>
+  </section>
+
+  <footer>
+    <div class="container">
+      © 2026 Rowing Training · Sources: <a href="https://thepeteplan.wordpress.com" target="_blank">Pete Plan</a> · <a href="https://www.concept2.com" target="_blank">Concept2</a>
+    </div>
+  </footer>
+
+</body>
+</html>

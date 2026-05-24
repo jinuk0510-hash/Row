@@ -1,0 +1,10 @@
+# Python
+__pycache__/
+*.pyc
+
+# SQLite DB (auto-generated, contains local data)
+fitness.db
+
+# OS
+.DS_Store
+Thumbs.db

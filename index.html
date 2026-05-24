@@ -1,0 +1,873 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rowing Training — Pete Plan</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg:        #0b1622;
+    --bg-soft:   #11233a;
+    --card:      #16293f;
+    --accent:    #4fd1c5;
+    --accent-2:  #38b2ac;
+    --text:      #e6edf3;
+    --text-mute: #9fb3c8;
+    --border:    #233a55;
+    --danger:    #ff6b6b;
+    --success:   #51cf66;
+    --warn:      #ffd166;
+  }
+  html, body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+  .container { max-width: 960px; margin: 0 auto; padding: 0 24px; }
+
+  header.topbar {
+    background: linear-gradient(135deg, #0b1622 0%, #15324d 100%);
+    padding: 28px 0 24px;
+    border-bottom: 1px solid var(--border);
+  }
+  header h1 { font-size: 26px; font-weight: 800; letter-spacing: -0.5px; }
+  header h1 .accent { color: var(--accent); }
+  header .meta { font-size: 12px; color: var(--text-mute); margin-top: 4px; }
+
+  nav.tabs {
+    display: flex; gap: 4px;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg); position: sticky; top: 0; z-index: 10;
+  }
+  nav.tabs button {
+    background: none; border: none; color: var(--text-mute);
+    padding: 14px 20px; cursor: pointer; font-size: 14px; font-weight: 600;
+    font-family: inherit; border-bottom: 2px solid transparent;
+    transition: color 0.2s, border-color 0.2s;
+  }
+  nav.tabs button:hover { color: var(--text); }
+  nav.tabs button.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+  main { padding: 32px 0 80px; }
+  .page { display: none; }
+  .page.active { display: block; }
+
+  h2 { font-size: 22px; font-weight: 700; margin-bottom: 16px; }
+  h3 { font-size: 17px; font-weight: 600; margin-bottom: 10px; }
+
+  .grid { display: grid; gap: 12px; margin-bottom: 24px; }
+  .grid.cols-5 { grid-template-columns: repeat(5, 1fr); }
+  .grid.cols-2 { grid-template-columns: repeat(2, 1fr); }
+
+  .stat {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 10px; padding: 16px; text-align: center;
+  }
+  .stat .label { font-size: 12px; color: var(--text-mute); margin-bottom: 6px; }
+  .stat .value { font-size: 22px; font-weight: 700; color: var(--accent); }
+
+  .card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 12px; padding: 20px; margin-bottom: 16px;
+  }
+  .card .card-title { font-weight: 700; margin-bottom: 6px; font-size: 15px; }
+  .card .target { color: var(--accent); font-weight: 600; margin: 6px 0; }
+  .card .desc { color: var(--text-mute); font-size: 13px; }
+  .card .badge {
+    display: inline-block; background: rgba(79, 209, 197, 0.15); color: var(--accent);
+    font-size: 11px; padding: 2px 8px; border-radius: 4px; margin-left: 6px;
+  }
+  .card .badge.opt { background: rgba(159,179,200,0.15); color: var(--text-mute); }
+
+  .field { margin-bottom: 14px; }
+  .field label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 4px; }
+  .field input, .field select, .field textarea {
+    width: 100%; background: var(--bg); color: var(--text);
+    border: 1px solid var(--border); border-radius: 6px;
+    padding: 9px 12px; font-size: 14px; font-family: inherit;
+  }
+  .field input:focus, .field select:focus, .field textarea:focus { outline: none; border-color: var(--accent); }
+  .row { display: flex; gap: 12px; }
+  .row .field { flex: 1; }
+
+  button.primary {
+    background: var(--accent); color: #0b1622; border: none;
+    padding: 11px 22px; border-radius: 6px; font-weight: 700;
+    cursor: pointer; font-size: 14px; font-family: inherit;
+  }
+  button.primary:hover { background: var(--accent-2); }
+  button.primary:disabled { opacity: 0.5; cursor: not-allowed; }
+  button.ghost {
+    background: transparent; color: var(--text-mute); border: 1px solid var(--border);
+    padding: 8px 14px; border-radius: 6px; cursor: pointer; font-size: 13px; font-family: inherit;
+  }
+  button.ghost:hover { color: var(--text); border-color: var(--accent); }
+
+  .alert { padding: 12px 14px; border-radius: 8px; margin-bottom: 16px; font-size: 14px; }
+  .alert.info    { background: rgba(79, 209, 197, 0.1);  border: 1px solid var(--accent);  color: var(--accent); }
+  .alert.warn    { background: rgba(255, 209, 102, 0.1); border: 1px solid var(--warn);    color: var(--warn); }
+  .alert.success { background: rgba(81, 207, 102, 0.1);  border: 1px solid var(--success); color: var(--success); }
+  .alert.error   { background: rgba(255, 107, 107, 0.1); border: 1px solid var(--danger);  color: var(--danger); }
+
+  table {
+    width: 100%; border-collapse: collapse; background: var(--card);
+    border: 1px solid var(--border); border-radius: 8px; overflow: hidden;
+  }
+  th, td { padding: 10px 12px; text-align: left; border-bottom: 1px solid var(--border); font-size: 13px; }
+  th { background: var(--bg-soft); font-weight: 600; color: var(--text-mute); }
+  tr:last-child td { border-bottom: none; }
+
+  details { margin-bottom: 16px; }
+  summary {
+    background: var(--bg-soft); border: 1px solid var(--border);
+    border-radius: 8px; padding: 10px 14px; cursor: pointer; font-weight: 600; font-size: 14px;
+  }
+  details[open] summary { border-bottom-left-radius: 0; border-bottom-right-radius: 0; }
+  details .body {
+    background: var(--card); border: 1px solid var(--border); border-top: none;
+    border-bottom-left-radius: 8px; border-bottom-right-radius: 8px; padding: 16px;
+  }
+
+  .goal-row {
+    display: flex; align-items: center; gap: 12px; padding: 12px;
+    background: var(--card); border: 1px solid var(--border); border-radius: 8px; margin-bottom: 8px;
+  }
+  .goal-row .info { flex: 1; }
+  .goal-row .info .title { font-weight: 600; }
+  .goal-row .info .note { color: var(--text-mute); font-size: 12px; margin-top: 2px; }
+
+  .seg { display: inline-flex; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+  .seg button {
+    background: var(--bg); color: var(--text-mute); border: none; padding: 10px 20px;
+    cursor: pointer; font-size: 14px; font-weight: 600; font-family: inherit;
+  }
+  .seg button.active { background: var(--accent); color: #0b1622; }
+
+  @media (max-width: 720px) {
+    .grid.cols-5 { grid-template-columns: repeat(3, 1fr); }
+    .grid.cols-2 { grid-template-columns: 1fr; }
+    nav.tabs { overflow-x: auto; }
+  }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="container">
+    <h1>🚣 <span class="accent">Rowing Training</span> — Pete Plan</h1>
+    <div class="meta">
+      Sources: thepeteplan.wordpress.com · Watts formula: Concept2 official · Demo (browser-local data)
+    </div>
+  </div>
+</header>
+
+<nav class="tabs">
+  <div class="container" style="display:flex; gap:4px;">
+    <button data-tab="dashboard" class="active">Dashboard</button>
+    <button data-tab="log">Log Session</button>
+    <button data-tab="history">History</button>
+    <button data-tab="goals">Goals</button>
+    <button data-tab="about">About the Plan</button>
+  </div>
+</nav>
+
+<main>
+  <div class="container">
+
+    <!-- ── Dashboard ── -->
+    <section id="page-dashboard" class="page active">
+      <h2>🏠 Dashboard</h2>
+
+      <h3>PRs by Distance</h3>
+      <div id="pr-grid" class="grid cols-5"></div>
+
+      <h3>⚙️ Plan Setup</h3>
+      <details id="setup-details">
+        <summary>Plan mode · Reference times · Start date</summary>
+        <div class="body">
+
+          <div class="field">
+            <label>Plan Mode</label>
+            <div class="seg" id="plan-mode-seg">
+              <button data-mode="beginner" onclick="setPlanMode('beginner')">Beginner (24 wk)</button>
+              <button data-mode="standard" onclick="setPlanMode('standard')">Standard (3 wk cycle)</button>
+            </div>
+            <div style="margin-top:8px;">
+              <button class="ghost" onclick="toggleAssessment()">Not sure? Take the 30-sec self-check →</button>
+            </div>
+            <div id="assessment-box" style="display:none; margin-top:12px;"></div>
+          </div>
+
+          <hr style="border:none; border-top:1px solid var(--border); margin:16px 0;">
+
+          <p style="color:var(--text-mute); font-size:13px; margin-bottom:14px;">
+            Every Standard session's target pace is anchored to your <strong>2k</strong>.
+            New PRs do <em>not</em> update it automatically — you control when to refresh.
+          </p>
+          <div class="row">
+            <div class="field"><label>Reference 2k — min</label><input type="number" id="ref-2k-min" min="0" max="20" step="1" value="8"></div>
+            <div class="field"><label>Reference 2k — sec</label><input type="number" id="ref-2k-sec" min="0" max="59.9" step="0.1" value="0"></div>
+            <div class="field" style="display:flex; align-items:flex-end;"><button class="primary" onclick="saveReference2k()" style="width:100%;">Save 2k</button></div>
+          </div>
+
+          <div class="row" style="margin-top:6px;">
+            <div class="field"><label>Plan Start Date</label><input type="date" id="plan-start-date"></div>
+            <div class="field" style="display:flex; align-items:flex-end;"><button class="primary" onclick="savePlanStartDate()" style="width:100%;">Save Start Date</button></div>
+          </div>
+        </div>
+      </details>
+
+      <h3 style="margin-top:24px;">🔥 This Week's Sessions</h3>
+      <div id="weekly-plan"></div>
+
+      <h3 style="margin-top:24px;">🎯 Active Goals</h3>
+      <div id="dashboard-goals"></div>
+    </section>
+
+    <!-- ── Log Session ── -->
+    <section id="page-log" class="page">
+      <h2>📝 Log Session</h2>
+      <div class="field">
+        <label>Workout Type</label>
+        <select id="log-type">
+          <option>UT2</option><option>AT</option><option>VO2</option>
+          <option>AN</option><option>TEST</option><option selected>FREE</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Distance</label>
+        <select id="log-distance">
+          <option value="500">500m</option><option value="1000">1k</option>
+          <option value="2000" selected>2k</option><option value="5000">5k</option><option value="10000">10k</option>
+        </select>
+      </div>
+      <div class="row">
+        <div class="field"><label>Total Time — minutes</label><input type="number" id="log-min" min="0" max="120" step="1" value="0"></div>
+        <div class="field"><label>Total Time — seconds</label><input type="number" id="log-sec" min="0" max="59.9" step="0.1" value="0"></div>
+      </div>
+      <div class="field"><label>Stroke Rate (spm, optional)</label><input type="number" id="log-spm" min="0" max="50" step="0.5" value="0"></div>
+      <div class="field">
+        <label>Condition</label>
+        <select id="log-condition"><option>High</option><option selected>Normal</option><option>Low</option></select>
+      </div>
+      <div class="field"><label>Note (optional)</label><input type="text" id="log-note" placeholder="e.g., Hard #2, missed pace on last rep"></div>
+      <div id="log-preview" class="alert info" style="display:none;"></div>
+      <button class="primary" onclick="saveSession()">Save Session</button>
+      <div id="log-msg" style="margin-top:14px;"></div>
+    </section>
+
+    <!-- ── History ── -->
+    <section id="page-history" class="page">
+      <h2>📈 History</h2>
+      <div class="field" style="max-width:240px;">
+        <label>Distance Filter</label>
+        <select id="history-filter" onchange="renderHistory()">
+          <option value="">All</option>
+          <option value="500">500m</option><option value="1000">1k</option>
+          <option value="2000">2k</option><option value="5000">5k</option><option value="10000">10k</option>
+        </select>
+      </div>
+      <div id="history-table"></div>
+    </section>
+
+    <!-- ── Goals ── -->
+    <section id="page-goals" class="page">
+      <h2>🎯 Goals</h2>
+      <h3>Active Goals</h3>
+      <div id="goals-list"></div>
+      <h3 style="margin-top:24px;">Add New Goal</h3>
+      <div class="field">
+        <label>Goal Type</label>
+        <select id="goal-type" onchange="renderGoalForm()">
+          <option value="PR">PR (Personal Record)</option>
+          <option value="PACE_HOLD">Pace Hold</option>
+          <option value="WATTS_HOLD">Watts Hold</option>
+          <option value="NOTE">Free Note</option>
+        </select>
+      </div>
+      <div id="goal-form-fields"></div>
+      <div class="field"><label>Note (optional)</label><input type="text" id="goal-note"></div>
+      <button class="primary" onclick="saveGoal()">Save Goal</button>
+      <div id="goal-msg" style="margin-top:14px;"></div>
+    </section>
+
+    <!-- ── About ── -->
+    <section id="page-about" class="page">
+      <h2>About the Pete Plan</h2>
+      <div class="alert info" style="margin-bottom:24px;">
+        This app applies the <strong>Pete Plan</strong> — a structured indoor rowing program by
+        <strong>Pete Marston</strong>. Two modes: a 24-week <strong>Beginner</strong> build-up and a
+        <strong>Standard</strong> 3-week continuous cycle.
+      </div>
+
+      <h3>Who is Pete Marston?</h3>
+      <div class="grid cols-2" style="margin-bottom:24px;">
+        <div class="card">
+          <div class="card-title">🏆 Rowing</div>
+          <ul style="color:var(--text-mute); font-size:13px; padding-left:18px; line-height:1.9;">
+            <li><strong style="color:var(--text);">100 km World Record Holder</strong></li>
+            <li><strong style="color:var(--text);">GB Indoor Rowing Team Coach</strong> (2011–2013)</li>
+            <li>Pete Plan Coaching — <strong style="color:var(--text);">18+ years</strong>, beginner to elite</li>
+          </ul>
+        </div>
+        <div class="card">
+          <div class="card-title">🎓 Academic</div>
+          <ul style="color:var(--text-mute); font-size:13px; padding-left:18px; line-height:1.9;">
+            <li><strong style="color:var(--text);">King's College London</strong> — Visiting Senior Lecturer</li>
+            <li><strong style="color:var(--text);">PhD supervisor</strong>, Human &amp; Applied Physiological Sciences</li>
+            <li>Chartered Mathematician · Chartered Ergonomist · MSc Ergonomics</li>
+          </ul>
+        </div>
+      </div>
+
+      <h3>Beginner vs Standard — which one?</h3>
+      <div class="card" style="margin-bottom:16px;">
+        <p style="margin-bottom:8px;"><strong>The criterion is capability, not a fixed 2k time.</strong>
+        A single 2k cutoff doesn't work because it varies by age, weight, and sex.</p>
+        <p style="color:var(--text-mute); font-size:14px;">
+          Choose <strong>Beginner</strong> if you're new to structured training, can't yet do 30 min continuous comfortably,
+          have little interval experience, or can't complete Standard interval sessions at target pace.
+          Move to <strong>Standard</strong> once you can handle those. Use the self-check in Plan Setup.
+        </p>
+      </div>
+
+      <h3>Standard Pete Plan (3-week cycle)</h3>
+      <p style="color:var(--text-mute); font-size:13px; margin-bottom:10px;">
+        Fixed 7-day weekly layout — 3 hard sessions + 3 steady + 1 rest:
+      </p>
+      <table style="margin-bottom:16px;">
+        <thead><tr><th>Day</th><th>Session</th></tr></thead>
+        <tbody>
+          <tr><td>Day 1</td><td>Speed interval (rotates by week)</td></tr>
+          <tr><td>Day 2</td><td>Steady distance (8–15 km, easy)</td></tr>
+          <tr><td>Day 3</td><td>Endurance interval (rotates by week)</td></tr>
+          <tr><td>Day 4</td><td>Steady distance</td></tr>
+          <tr><td>Day 5</td><td>Hard distance (5k+)</td></tr>
+          <tr><td>Day 6</td><td>Steady distance</td></tr>
+          <tr><td>Day 7</td><td>Complete rest</td></tr>
+        </tbody>
+      </table>
+      <p style="color:var(--text-mute); font-size:13px; margin-bottom:10px;">
+        Steady days exist to <strong>recover</strong> for the next hard session — ≥10s slower than your endurance
+        interval pace, 22–25 spm. "If in doubt, go slower." The speed &amp; endurance intervals rotate each week:
+      </p>
+      <table style="margin-bottom:16px;">
+        <thead><tr><th></th><th>Speed interval</th><th>Endurance interval</th></tr></thead>
+        <tbody>
+          <tr><td>Week 1</td><td>8 × 500m / 3:30R</td><td>5 × 1500m / 5:00R</td></tr>
+          <tr><td>Week 2</td><td>250-500-750-1k-750-500-250 / 1:30R per 250m</td><td>4 × 2000m / 5:00R</td></tr>
+          <tr><td>Week 3</td><td>4 × 1000m / 5:00R</td><td>3k, 2.5k, 2k / 5:00R</td></tr>
+        </tbody>
+      </table>
+      <p style="color:var(--text-mute); font-size:13px; margin-bottom:10px;">
+        <strong>Pacing — every session is anchored to your 2k PB</strong> (offset = seconds per 500m vs your 2k split):
+      </p>
+      <table style="margin-bottom:16px;">
+        <thead><tr><th>Session</th><th>Target (vs 2k pace)</th><th>SPM</th></tr></thead>
+        <tbody>
+          <tr><td>8 × 500m</td><td>2k − 3s</td><td>32–36</td></tr>
+          <tr><td>Pyramid 250→1k→250</td><td>≈ 2k pace (constant, then build)</td><td>30–34</td></tr>
+          <tr><td>4 × 1000m</td><td>2k + 1s</td><td>30–34</td></tr>
+          <tr><td>5 × 1500m</td><td>2k + 5~7s (≈ 5k pace)</td><td>28–32</td></tr>
+          <tr><td>4 × 2000m</td><td>2k + 5~7s (≈ 5k pace)</td><td>28–30</td></tr>
+          <tr><td>3k, 2.5k, 2k</td><td>2k + 5~7s (≈ 5k pace)</td><td>28–30</td></tr>
+          <tr><td>Distance / Steady</td><td>≈ 10k pace + 5~7s</td><td>22–25</td></tr>
+        </tbody>
+      </table>
+      <p style="color:var(--text-mute); font-size:13px; margin-bottom:24px;">
+        First time through, start at a pace you know you can hold — then beat that average next cycle.
+        Targets are fixed by your 2k reference and only change when you update it.
+        Sources: thepeteplan.wordpress.com + Concept2 Forum Pete Plan pacing consensus.
+      </p>
+
+      <h3>Beginner Pete Plan (24 weeks)</h3>
+      <p style="color:var(--text-mute); font-size:13px; margin-bottom:24px;">
+        A 24-week progressive build-up. Each week has <strong>3 core sessions</strong> plus
+        <strong>2 optional</strong> ones (shown in brackets). Volume rises ~500m/week early on, stabilises,
+        then peaks before a 2k test. First time through, you can halve every session. Pacing is progressive
+        (beat your last session). The full week-by-week schedule is shown live in the Dashboard.
+      </p>
+
+      <h3>Watts Formula</h3>
+      <div class="card" style="margin-bottom:24px;">
+        <code style="background:var(--bg); padding:4px 10px; border-radius:4px; color:var(--accent); font-size:15px;">W = 2.80 / (pace_sec_per_meter)³</code>
+        <p style="color:var(--text-mute); font-size:13px; margin-top:10px;">
+          Official Concept2 conversion. This is why 1:35 → 1:30 on a 500m needs ~18% more power.
+        </p>
+      </div>
+
+      <h3>Sources</h3>
+      <div class="card">
+        <ul style="padding-left:18px; line-height:2;">
+          <li><strong>Standard Pete Plan</strong> · <a href="https://thepeteplan.wordpress.com/the-pete-plan/" target="_blank">thepeteplan.wordpress.com/the-pete-plan</a></li>
+          <li><strong>Beginner Pete Plan</strong> · <a href="https://thepeteplan.wordpress.com/beginner-training/" target="_blank">thepeteplan.wordpress.com/beginner-training</a></li>
+          <li><strong>Concept2 Watts</strong> · <a href="https://www.concept2.com/indoor-rowers/training/calculators/watts-calculator" target="_blank">concept2.com</a></li>
+          <li><strong>SPM ranges</strong> · community consensus (r/concept2) — "suggested", not strict.</li>
+        </ul>
+      </div>
+    </section>
+
+  </div>
+</main>
+
+<script>
+/* ════════════════════════════════════════════════
+   Plan data — verbatim from thepeteplan.wordpress.com
+   ════════════════════════════════════════════════ */
+const DISTANCES = [500, 1000, 2000, 5000, 10000];
+
+// Standard Pete Plan — 3-week cycle. Every session anchored to your 2k PB.
+// Sources:
+//   thepeteplan.wordpress.com/the-pete-plan (8x500=2k-3, 4x1000=2k+1, 5x1500=5k pace)
+//   Concept2 Forum Pete Plan pacing consensus (4x2k / pyramid / 3k-2.5k-2k = 2k +5~7 ≈ 5k pace;
+//     steady = 10k pace +5~7). c2forum.com
+// offset = seconds per 500m relative to your 2k average split. +6 used as the mid of the +5~7 band.
+const STANDARD_PLAN = [
+  { week: 1,
+    speed:     { name: "8 × 500m / 3:30R",  offset: -3, note: "2k pace − 3s",            spm: "32–36" },
+    endurance: { name: "5 × 1500m / 5:00R", offset: +6, note: "≈ 5k pace (2k + 5~7s)",   spm: "28–32" } },
+  { week: 2,
+    speed:     { name: "250-500-750-1k-750-500-250 / 1:30R per 250m", offset: 0, note: "≈ 2k pace, constant then build", spm: "30–34" },
+    endurance: { name: "4 × 2000m / 5:00R", offset: +6, note: "≈ 5k pace (2k + 5~7s)",   spm: "28–30" } },
+  { week: 3,
+    speed:     { name: "4 × 1000m / 5:00R", offset: +1, note: "2k pace + 1s",            spm: "30–34" },
+    endurance: { name: "3k, 2.5k, 2k / 5:00R", offset: +6, note: "≈ 5k pace (2k + 5~7s)", spm: "28–30" } },
+];
+// Day 5 hard distance + steady distance sessions.
+// Source: thepeteplan.wordpress.com — 7-day layout:
+//   D1 speed interval · D2 steady · D3 endurance interval · D4 steady · D5 hard distance(5k+) · D6 steady · D7 rest
+// Steady: 8–15km, 22–25 spm, ≥10s slower than endurance interval, recover for next day's hard session.
+const STANDARD_HARD_DISTANCE = { name: "Hard Distance (5k+)", offset: +6, note: "hard continuous, ≈ 5k pace", spm: "24–28" };
+const STANDARD_STEADY = { name: "Steady Distance (8–15 km)", offset: +20, note: "easy — ≥10s slower than endurance interval, recover for tomorrow", spm: "22–25" };
+
+// Beginner Pete Plan — 24-week progression.
+// Source: thepeteplan.wordpress.com/beginner-training (verbatim)
+// core = 3 required sessions; optional = 2 bonus sessions.
+const BEGINNER_PLAN = [
+  { core: ["5000m", "6 × 500m / 2:00R", "5000m"],                 optional: ["20min", "2 × 10min / 2:00R"] },
+  { core: ["5500m", "4 × 750m / 2:00R", "5500m"],                 optional: ["20min", "3 × 8min / 2:00R"] },
+  { core: ["6000m", "2 × 2000m / 4:00R", "6000m"],                optional: ["5000m", "6 × 500m / 2:00R"] },
+  { core: ["6500m", "3 × 1000m / 3:00R", "6500m"],                optional: ["6000m", "2 × 2500m / 2:00R"] },
+  { core: ["7000m", "4 × 800m / 2:00R", "7000m"],                 optional: ["20min", "2 × 10min / 2:00R"] },
+  { core: ["7500m", "3 × 2000m / 4:00R", "7500m"],                optional: ["5000m", "6 × 500m / 2:00R"] },
+  { core: ["8000m", "7 × 500m / 2:00R", "8000m"],                 optional: ["6000m", "3 × 1500m / 3:00R"] },
+  { core: ["8500m", "4 × 1500m / 3:00R", "8000m"],                optional: ["25min", "3 × 1k / 3:00R"] },
+  { core: ["9000m", "4 × 800m / 2:00R", "8000m"],                 optional: ["8000m", "2 × 10min / 2:00R"] },
+  { core: ["9500m", "3 × 2000m / 4:00R", "8000m"],                optional: ["8000m", "7 × 500m / 2:00R"] },
+  { core: ["10000m", "8 × 500m / 2:00R", "8000m"],                optional: ["25min", "4 × 1500m / 3:00R"] },
+  { core: ["10000m", "4 × 1500m / 3:00R", "3 × 10min / 2:00R"],   optional: ["8000m", "4 × 800m / 2:00R"] },
+  { core: ["10000m", "4 × 1k / 3:00R", "2 × 15min / 2:00R"],      optional: ["8000m", "3 × 2k / 4:00R"] },
+  { core: ["10000m", "3 × 2k / 4:00R", "4 × 8min / 2:00R"],       optional: ["30min", "7 × 500m / 2:00R"] },
+  { core: ["10000m", "5 × 750m / 2:00R", "3 × 10min / 2:00R"],    optional: ["8000m", "4 × 1500m / 3:00R"] },
+  { core: ["10500m", "5 × 1500m / 3:00R", "30min"],               optional: ["10000m", "4 × 1k / 3:00R"] },
+  { core: ["10500m", "8 × 500m / 2:00R", "2 × 15min / 2:00R"],    optional: ["30min", "4 × 8min / 2:00R"] },
+  { core: ["11000m", "4 × 2k / 4:00R", "30min"],                  optional: ["10000m", "4 × 1k / 3:00R"] },
+  { core: ["10000m", "5 × 800m / 2:00R", "3 × 10min / 2:00R"],    optional: ["30min", "4 × 2k / 4:00R"] },
+  { core: ["12000m", "5 × 1500m / 3:00R", "30min"],               optional: ["10000m", "8 × 500m / 2:00R"] },
+  { core: ["10000m", "4 × 1k / 3:00R", "4 × 8min / 2:00R"],       optional: ["12000m", "5 × 1500m / 3:00R"] },
+  { core: ["12000m", "4 × 2k / 4:00R", "30min"],                  optional: ["3 × 10min / 2:00R", "5 × 800m / 2:00R"] },
+  { core: ["10000m", "8 × 500m / 2:00R", "2 × 15min / 2:00R"],    optional: ["10000m", "4 × 2k / 4:00R"] },
+  { core: ["12000m", "5 × 1500m / 3:00R", "30min"],               optional: ["2 × 15min / 2:00R", "4 × 1k / 3:00R"] },
+];
+
+/* ════════════════════════════════════════════════
+   Pace / Watts (Concept2 official formula)
+   ════════════════════════════════════════════════ */
+function paceToWatts(p) { if (p <= 0) return 0; const ppm = p / 500; return 2.80 / (ppm ** 3); }
+function calcAvgSplit(d, t) { return d <= 0 ? 0 : t * 500 / d; }
+function secToMmss(sec) {
+  if (sec == null || isNaN(sec)) return "-";
+  const m = Math.floor(sec / 60); const s = (sec - m * 60).toFixed(1);
+  return `${m}:${s.padStart(4, '0')}`;
+}
+
+/* ════════════════════════════════════════════════
+   Storage
+   ════════════════════════════════════════════════ */
+const KEY_LOGS = "rt_rowing_logs", KEY_GOALS = "rt_goals", KEY_SETTINGS = "rt_settings";
+function loadLogs()  { try { return JSON.parse(localStorage.getItem(KEY_LOGS))  || []; } catch { return []; } }
+function loadGoals() { try { return JSON.parse(localStorage.getItem(KEY_GOALS)) || []; } catch { return []; } }
+function loadSettings() { try { return JSON.parse(localStorage.getItem(KEY_SETTINGS)) || {}; } catch { return {}; } }
+function saveLogs(v)  { localStorage.setItem(KEY_LOGS, JSON.stringify(v)); }
+function saveGoals(v) { localStorage.setItem(KEY_GOALS, JSON.stringify(v)); }
+function saveSettingsObj(v) { localStorage.setItem(KEY_SETTINGS, JSON.stringify(v)); }
+function setSetting(k, val) { const s = loadSettings(); s[k] = val; saveSettingsObj(s); }
+function getSetting(k) { return loadSettings()[k]; }
+
+function getPR(d) {
+  const logs = loadLogs().filter(l => l.distance_m === d);
+  if (!logs.length) return null;
+  return logs.reduce((b, l) => l.total_time_sec < b.total_time_sec ? l : b);
+}
+
+function getPlanMode() { return getSetting("plan_mode") || "standard"; }
+
+/* ──── Week progression — per-mode counter (independent of records & date) ──── */
+function getProgress(mode) { return parseInt(getSetting(`plan_progress_${mode}`) || 0); }
+function advanceWeek() {
+  const mode = getPlanMode();
+  setSetting(`plan_progress_${mode}`, getProgress(mode) + 1);
+  renderAll();
+}
+function resetPlanProgress() {
+  const mode = getPlanMode();
+  if (!confirm(`Reset ${mode} plan back to week 1?\n(Your logs and PRs are kept.)`)) return;
+  setSetting(`plan_progress_${mode}`, 0);
+  // clear this mode's session checks
+  const s = loadSettings();
+  if (s.session_checks) {
+    Object.keys(s.session_checks).forEach(k => { if (k.startsWith(mode + "_")) delete s.session_checks[k]; });
+    saveSettingsObj(s);
+  }
+  renderAll();
+}
+
+/* ──── Session checks (namespaced by plan mode + effective week) ──── */
+function checksKey(mode, eff) { return `${mode}_${eff}`; }
+function getChecks(mode, eff) { return (loadSettings().session_checks || {})[checksKey(mode, eff)] || {}; }
+function setCheck(mode, eff, key, val) {
+  const s = loadSettings();
+  if (!s.session_checks) s.session_checks = {};
+  const ck = checksKey(mode, eff);
+  if (!s.session_checks[ck]) s.session_checks[ck] = {};
+  s.session_checks[ck][key] = val;
+  saveSettingsObj(s);
+}
+function toggleCheck(mode, eff, key, val) { setCheck(mode, eff, key, val); renderWeeklyPlan(); }
+
+/* ════════════════════════════════════════════════
+   Navigation
+   ════════════════════════════════════════════════ */
+document.querySelectorAll("nav.tabs button").forEach(btn => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll("nav.tabs button").forEach(b => b.classList.remove("active"));
+    document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
+    btn.classList.add("active");
+    document.getElementById(`page-${btn.dataset.tab}`).classList.add("active");
+    renderAll();
+  });
+});
+
+/* ════════════════════════════════════════════════
+   Dashboard
+   ════════════════════════════════════════════════ */
+function renderPRGrid() {
+  document.getElementById("pr-grid").innerHTML = DISTANCES.map(d => {
+    const pr = getPR(d);
+    const label = d < 1000 ? `${d}m` : `${d/1000}k`;
+    return `<div class="stat"><div class="label">${label}</div><div class="value">${pr ? secToMmss(pr.total_time_sec) : "-"}</div></div>`;
+  }).join("");
+}
+
+function targetText(session, ref2k) {
+  // All Standard-plan sessions anchored to the 2k reference.
+  if (!ref2k) return `🎯 Set your 2k reference to see target`;
+  const t = calcAvgSplit(2000, ref2k) + session.offset;
+  return `🎯 Target: ${secToMmss(t)}/500m (~${paceToWatts(t).toFixed(0)}W) · ${session.note} · ${session.spm} spm`;
+}
+
+function renderWeeklyPlan() {
+  const box = document.getElementById("weekly-plan");
+  const mode = getPlanMode();
+  const ref2k = getSetting("reference_2k_sec");
+
+  const eff = getProgress(mode);          // per-mode counter, starts at 0
+  const checks = getChecks(mode, eff);
+  let html = "", required = [];
+
+  if (mode === "standard") {
+    const wk = STANDARD_PLAN[eff % 3];
+    const cycle = Math.floor(eff / 3) + 1;
+    html += `<div class="alert info">
+      Mode: <strong>Standard</strong> · ${ref2k ? `2k ${secToMmss(ref2k)}` : "2k not set"}<br>
+      <strong>Week ${wk.week} of 3</strong> · cycle ${cycle} · 7-day layout (3 hard + 3 steady + rest)
+    </div>`;
+
+    // target helper for steady / hard distance
+    const distTarget = (sess) => ref2k
+      ? `🎯 Target: ${secToMmss(calcAvgSplit(2000, ref2k) + sess.offset)}/500m · ${sess.note} · ${sess.spm} spm`
+      : `🎯 Set your 2k reference to see target`;
+
+    // 7-day layout (source: thepeteplan.wordpress.com)
+    html += dayLabel(1) + renderSessionCard({ mode, eff, key: "speed",
+      title: `Speed Interval — ${wk.speed.name}`, badge: "SPEED",
+      target: targetText(wk.speed, ref2k), checked: !!checks.speed });
+    html += dayLabel(2) + renderSessionCard({ mode, eff, key: "st1",
+      title: STANDARD_STEADY.name, badge: "STEADY",
+      target: distTarget(STANDARD_STEADY), checked: !!checks.st1 });
+    html += dayLabel(3) + renderSessionCard({ mode, eff, key: "endurance",
+      title: `Endurance Interval — ${wk.endurance.name}`, badge: "ENDURANCE",
+      target: targetText(wk.endurance, ref2k), checked: !!checks.endurance });
+    html += dayLabel(4) + renderSessionCard({ mode, eff, key: "st2",
+      title: STANDARD_STEADY.name, badge: "STEADY",
+      target: distTarget(STANDARD_STEADY), checked: !!checks.st2 });
+    html += dayLabel(5) + renderSessionCard({ mode, eff, key: "hard",
+      title: STANDARD_HARD_DISTANCE.name, badge: "HARD DIST",
+      target: distTarget(STANDARD_HARD_DISTANCE), checked: !!checks.hard });
+    html += dayLabel(6) + renderSessionCard({ mode, eff, key: "st3",
+      title: STANDARD_STEADY.name, badge: "STEADY",
+      target: distTarget(STANDARD_STEADY), checked: !!checks.st3 });
+    html += dayLabel(7) + `<div class="card" style="opacity:0.6;"><div class="card-title">Rest Day 💤</div><div class="desc">Complete rest — recovery is part of the plan.</div></div>`;
+
+    required = ["speed", "st1", "endurance", "st2", "hard", "st3"];
+
+  } else {
+    // Beginner: linear 24-week
+    const wkIdx = Math.min(eff, BEGINNER_PLAN.length - 1);
+    const wk = BEGINNER_PLAN[wkIdx];
+    const isFinal = eff >= BEGINNER_PLAN.length - 1;
+    html += `<div class="alert info">
+      Mode: <strong>Beginner</strong> → <strong>Week ${wkIdx + 1} of 24</strong>${isFinal ? " (final week — graduate to Standard!)" : ""}
+    </div>`;
+    html += `<p style="color:var(--text-mute); font-size:12px; margin:-6px 0 12px;">3 core sessions (required) + 2 optional. Pacing is progressive — beat your last session.</p>`;
+
+    wk.core.forEach((name, i) => {
+      html += renderSessionCard({ mode, eff, key: `c${i+1}`,
+        title: `Core #${i+1} — ${name}`, badge: "CORE",
+        target: `🎯 Progressive — beat your last for this session`, checked: !!checks[`c${i+1}`] });
+    });
+    wk.optional.forEach((name, i) => {
+      html += renderSessionCard({ mode, eff, key: `o${i+1}`,
+        title: `Optional #${i+1} — ${name}`, badge: "OPT", optBadge: true,
+        target: `Optional — add when you have time/motivation`, checked: !!checks[`o${i+1}`] });
+    });
+    required = ["c1", "c2", "c3"];
+  }
+
+  // Progress / advance
+  const doneCount = required.filter(k => checks[k]).length;
+  if (doneCount === required.length) {
+    const label = mode === "standard" ? "next cycle week" : "next week";
+    html += `<div class="alert success" style="display:flex; align-items:center; justify-content:space-between; gap:12px;">
+      <span>✅ All ${required.length} required sessions done. Advance to ${label}?</span>
+      <button class="primary" onclick="advanceWeek()">Mark Complete →</button>
+    </div>`;
+  } else {
+    html += `<div class="alert" style="text-align:center;">${doneCount} / ${required.length} required sessions completed.</div>`;
+  }
+
+  // Reset progress (always available)
+  html += `<div style="text-align:center; margin-top:8px;">
+    <button class="ghost" onclick="resetPlanProgress()">↺ Reset this plan to week 1</button>
+  </div>`;
+
+  box.innerHTML = html;
+}
+
+function dayLabel(n) {
+  return `<div style="color:var(--text-mute); font-size:11px; font-weight:700; letter-spacing:1px; margin:6px 0 2px;">DAY ${n}</div>`;
+}
+
+function renderSessionCard({ mode, eff, key, title, badge, optBadge, target, checked }) {
+  const ca = checked ? "checked" : "";
+  const ts = checked ? "text-decoration: line-through; opacity: 0.6;" : "";
+  const badgeClass = optBadge ? "badge opt" : "badge";
+  return `<div class="card" style="display:flex; gap:14px; align-items:flex-start;">
+    <input type="checkbox" ${ca} style="width:22px; height:22px; margin-top:2px; accent-color: var(--accent); cursor:pointer;"
+           onchange="toggleCheck('${mode}', ${eff}, '${key}', this.checked)">
+    <div style="flex:1; ${ts}">
+      <div class="card-title">${title}<span class="${badgeClass}">${badge}</span></div>
+      <div class="target">${target}</div>
+    </div>
+  </div>`;
+}
+
+function renderDashboardGoals() {
+  const goals = loadGoals().filter(g => g.active);
+  document.getElementById("dashboard-goals").innerHTML = goals.length
+    ? goals.map(g => `<div class="card">${formatGoal(g)}</div>`).join("")
+    : `<div class="alert">No active goals. Add one in the Goals tab.</div>`;
+}
+
+/* ──── Plan mode + self-assessment ──── */
+function setPlanMode(mode) {
+  setSetting("plan_mode", mode);
+  renderAll();
+}
+function toggleAssessment() {
+  const box = document.getElementById("assessment-box");
+  if (box.style.display === "none") {
+    box.style.display = "block";
+    box.innerHTML = `
+      <div class="card" style="margin:0;">
+        <div class="card-title" style="margin-bottom:10px;">30-second self-check</div>
+        <label style="display:block; margin-bottom:8px; font-size:13px;"><input type="checkbox" id="q1"> I have done structured rowing training for 3+ months</label>
+        <label style="display:block; margin-bottom:8px; font-size:13px;"><input type="checkbox" id="q2"> 30 minutes of continuous rowing feels comfortable</label>
+        <label style="display:block; margin-bottom:8px; font-size:13px;"><input type="checkbox" id="q3"> I have done interval training before</label>
+        <label style="display:block; margin-bottom:12px; font-size:13px;"><input type="checkbox" id="q4"> I could complete 8 × 500m at ~2k pace</label>
+        <button class="primary" onclick="runAssessment()">See recommendation</button>
+        <div id="assessment-result" style="margin-top:12px;"></div>
+      </div>`;
+  } else {
+    box.style.display = "none";
+  }
+}
+function runAssessment() {
+  const yes = ["q1","q2","q3","q4"].filter(id => document.getElementById(id).checked).length;
+  const rec = yes >= 3 ? "standard" : "beginner";
+  const res = document.getElementById("assessment-result");
+  res.innerHTML = `<div class="alert ${rec === "standard" ? "success" : "info"}">
+    You checked ${yes}/4 → Recommended: <strong>${rec === "standard" ? "Standard" : "Beginner"}</strong> plan.
+    <button class="ghost" style="margin-left:8px;" onclick="setPlanMode('${rec}')">Apply</button>
+  </div>`;
+}
+
+function refreshSetupInputs() {
+  const ref2k = getSetting("reference_2k_sec");
+  if (ref2k) { document.getElementById("ref-2k-min").value = Math.floor(ref2k/60); document.getElementById("ref-2k-sec").value = (ref2k%60).toFixed(1); }
+  const start = getSetting("plan_start_date");
+  document.getElementById("plan-start-date").value = start || new Date().toISOString().slice(0,10);
+
+  const mode = getPlanMode();
+  document.querySelectorAll("#plan-mode-seg button").forEach(b =>
+    b.classList.toggle("active", b.dataset.mode === mode));
+
+  if (!start) document.getElementById("setup-details").open = true;
+}
+function saveReference2k() {
+  const t = (parseFloat(document.getElementById("ref-2k-min").value)||0)*60 + (parseFloat(document.getElementById("ref-2k-sec").value)||0);
+  if (t <= 0) { alert("Enter a valid 2k time."); return; }
+  setSetting("reference_2k_sec", t); renderAll();
+}
+function savePlanStartDate() {
+  const d = document.getElementById("plan-start-date").value;
+  if (!d) { alert("Pick a start date."); return; }
+  setSetting("plan_start_date", d); renderAll();
+}
+
+/* ════════════════════════════════════════════════
+   Log Session
+   ════════════════════════════════════════════════ */
+function logTotalSec() {
+  return (parseFloat(document.getElementById("log-min").value)||0)*60 + (parseFloat(document.getElementById("log-sec").value)||0);
+}
+function updateLogPreview() {
+  const d = parseInt(document.getElementById("log-distance").value), t = logTotalSec();
+  const prev = document.getElementById("log-preview");
+  if (t > 0) { const sp = calcAvgSplit(d, t); prev.style.display = "block";
+    prev.textContent = `Avg split: ${secToMmss(sp)}/500m  ·  Avg power: ${paceToWatts(sp).toFixed(0)}W`;
+  } else prev.style.display = "none";
+}
+["log-distance","log-min","log-sec"].forEach(id => document.getElementById(id).addEventListener("input", updateLogPreview));
+
+function saveSession() {
+  const t = logTotalSec(), d = parseInt(document.getElementById("log-distance").value);
+  if (t <= 0) { alert("Enter a valid time."); return; }
+  const sp = calcAvgSplit(d, t), w = paceToWatts(sp);
+  const spm = parseFloat(document.getElementById("log-spm").value) || null;
+  const prevPR = getPR(d), isPR = !prevPR || t < prevPR.total_time_sec;
+
+  const logs = loadLogs();
+  logs.unshift({ id: Date.now(), date: new Date().toISOString().replace("T"," ").slice(0,19),
+    workout_type: document.getElementById("log-type").value, distance_m: d,
+    total_time_sec: t, avg_split_sec: sp, avg_watts: w, stroke_rate: spm,
+    condition: document.getElementById("log-condition").value, note: document.getElementById("log-note").value.trim() });
+  saveLogs(logs);
+
+  let html = `<div class="alert success">Saved! ${secToMmss(sp)}/500m, ${w.toFixed(0)}W</div>`;
+  if (isPR) {
+    const label = d < 1000 ? `${d}m` : `${d/1000}k`;
+    html += `<div class="alert success">🏆 New PR! ${label} ${secToMmss(t)}</div>`;
+    if (d === 2000) {
+      const r = getSetting("reference_2k_sec");
+      if (!r || t < r) html += `<div class="alert info">Update Pete Plan targets to this new 2k (${secToMmss(t)})? <button class="ghost" onclick="updateRef('reference_2k_sec',${t})">Update 2k reference</button></div>`;
+    }
+  }
+  document.getElementById("log-msg").innerHTML = html;
+  document.getElementById("log-note").value = ""; updateLogPreview();
+}
+function updateRef(key, t) { setSetting(key, t); document.getElementById("log-msg").innerHTML += `<div class="alert success">Reference updated to ${secToMmss(t)}.</div>`; }
+
+/* ════════════════════════════════════════════════
+   History
+   ════════════════════════════════════════════════ */
+function renderHistory() {
+  const f = document.getElementById("history-filter").value;
+  const logs = loadLogs().filter(l => !f || l.distance_m === parseInt(f));
+  const box = document.getElementById("history-table");
+  if (!logs.length) { box.innerHTML = `<div class="alert">No sessions yet.</div>`; return; }
+  box.innerHTML = `<table><thead><tr>
+    <th>Date</th><th>Type</th><th>Distance</th><th>Time</th><th>Split/500m</th><th>Watts</th><th>spm</th><th>Cond.</th><th>Note</th>
+    </tr></thead><tbody>${logs.map(l => {
+      const lab = l.distance_m < 1000 ? `${l.distance_m}m` : `${l.distance_m/1000}k`;
+      return `<tr><td>${l.date}</td><td>${l.workout_type}</td><td>${lab}</td><td>${secToMmss(l.total_time_sec)}</td>
+        <td>${secToMmss(l.avg_split_sec)}</td><td>${l.avg_watts ? l.avg_watts.toFixed(0) : "-"}</td>
+        <td>${l.stroke_rate ? l.stroke_rate.toFixed(1) : "-"}</td><td>${l.condition}</td><td>${l.note || "-"}</td></tr>`;
+    }).join("")}</tbody></table>`;
+}
+
+/* ════════════════════════════════════════════════
+   Goals
+   ════════════════════════════════════════════════ */
+function formatGoal(g) {
+  if (g.goal_type === "PR") { const lab = g.distance_m<1000?`${g.distance_m}m`:`${g.distance_m/1000}k`;
+    return `<strong>PR Goal</strong> — ${lab} in ${secToMmss(g.target_time_sec)}${g.note?` <span style="color:var(--text-mute)">(${g.note})</span>`:""}`; }
+  if (g.goal_type === "PACE_HOLD") { const lab = g.distance_m<1000?`${g.distance_m}m`:`${g.distance_m/1000}k`;
+    const spm = g.max_stroke_rate?` / ≤${g.max_stroke_rate} spm`:"";
+    return `<strong>Pace Hold</strong> — ${lab} at ${secToMmss(g.target_split_sec)}/500m${spm}`; }
+  if (g.goal_type === "WATTS_HOLD") { const base = g.duration_sec?`${Math.round(g.duration_sec/60)} min`:(g.distance_m<1000?`${g.distance_m}m`:`${g.distance_m/1000}k`);
+    const spm = g.max_stroke_rate?` / ≤${g.max_stroke_rate} spm`:"";
+    return `<strong>Watts Hold</strong> — ${base} @ ${g.target_watts.toFixed(0)}W${spm}`; }
+  return `<strong>Note</strong> — ${g.note || "(empty)"}`;
+}
+function renderGoalsList() {
+  const goals = loadGoals().filter(g => g.active);
+  document.getElementById("goals-list").innerHTML = goals.length
+    ? goals.map(g => `<div class="goal-row"><div class="info"><div class="title">${formatGoal(g)}</div>
+        ${g.note && g.goal_type!=="NOTE"?`<div class="note">${g.note}</div>`:""}</div>
+        <button class="ghost" onclick="deactivateGoal(${g.id})">End</button></div>`).join("")
+    : `<div class="alert">No active goals.</div>`;
+}
+function deactivateGoal(id) { const goals = loadGoals(); const g = goals.find(x => x.id===id); if (g){ g.active=false; saveGoals(goals); renderAll(); } }
+function renderGoalForm() {
+  const type = document.getElementById("goal-type").value, box = document.getElementById("goal-form-fields");
+  const distSel = `<select id="g-distance">${DISTANCES.map(d=>`<option value="${d}">${d<1000?d+"m":d/1000+"k"}</option>`).join("")}</select>`;
+  if (type === "PR") box.innerHTML = `<div class="field"><label>Distance</label>${distSel}</div>
+    <div class="row"><div class="field"><label>Target min</label><input type="number" id="g-min" min="0" max="120" value="7"></div>
+    <div class="field"><label>Target sec</label><input type="number" id="g-sec" min="0" max="59.9" step="0.1" value="30"></div></div>`;
+  else if (type === "PACE_HOLD") box.innerHTML = `<div class="field"><label>Distance</label>${distSel}</div>
+    <div class="row"><div class="field"><label>Split min (/500m)</label><input type="number" id="g-spmin" min="0" max="10" value="2"></div>
+    <div class="field"><label>Split sec</label><input type="number" id="g-spsec" min="0" max="59.9" step="0.1" value="0"></div></div>
+    <div class="field"><label>Max spm (0=none)</label><input type="number" id="g-maxspm" min="0" max="50" step="0.5" value="0"></div>`;
+  else if (type === "WATTS_HOLD") box.innerHTML = `<div class="field"><label>Mode</label>
+    <select id="g-mode" onchange="document.getElementById('g-distance-wrap').style.display=this.value==='distance'?'block':'none';document.getElementById('g-duration-wrap').style.display=this.value==='distance'?'none':'block';">
+    <option value="distance">By Distance</option><option value="duration">By Duration</option></select></div>
+    <div class="field" id="g-distance-wrap"><label>Distance</label>${distSel}</div>
+    <div class="field" id="g-duration-wrap" style="display:none;"><label>Duration (min)</label><input type="number" id="g-dur" min="1" max="180" value="20"></div>
+    <div class="field"><label>Target Watts</label><input type="number" id="g-watts" min="50" max="600" step="5" value="250"></div>
+    <div class="field"><label>Max spm (0=none)</label><input type="number" id="g-maxspm" min="0" max="50" step="0.5" value="0"></div>`;
+  else box.innerHTML = ``;
+}
+function saveGoal() {
+  const type = document.getElementById("goal-type").value, note = document.getElementById("goal-note").value.trim();
+  const g = { id: Date.now(), goal_type: type, active: true, set_date: new Date().toISOString(), note };
+  if (type === "PR") { g.distance_m = parseInt(document.getElementById("g-distance").value);
+    g.target_time_sec = (parseFloat(document.getElementById("g-min").value)||0)*60 + (parseFloat(document.getElementById("g-sec").value)||0); }
+  else if (type === "PACE_HOLD") { g.distance_m = parseInt(document.getElementById("g-distance").value);
+    g.target_split_sec = (parseFloat(document.getElementById("g-spmin").value)||0)*60 + (parseFloat(document.getElementById("g-spsec").value)||0);
+    const m = parseFloat(document.getElementById("g-maxspm").value); g.max_stroke_rate = m>0?m:null; }
+  else if (type === "WATTS_HOLD") { const mode = document.getElementById("g-mode").value;
+    if (mode==="distance") g.distance_m = parseInt(document.getElementById("g-distance").value);
+    else g.duration_sec = (parseFloat(document.getElementById("g-dur").value)||0)*60;
+    g.target_watts = parseFloat(document.getElementById("g-watts").value)||0;
+    const m = parseFloat(document.getElementById("g-maxspm").value); g.max_stroke_rate = m>0?m:null; }
+  const goals = loadGoals(); goals.unshift(g); saveGoals(goals);
+  document.getElementById("goal-msg").innerHTML = `<div class="alert success">Goal saved!</div>`;
+  document.getElementById("goal-note").value = ""; renderAll();
+}
+
+/* ════════════════════════════════════════════════
+   Init
+   ════════════════════════════════════════════════ */
+function renderAll() {
+  refreshSetupInputs(); renderPRGrid(); renderWeeklyPlan(); renderDashboardGoals();
+  renderHistory(); renderGoalsList();
+}
+renderGoalForm();
+renderAll();
+</script>
+</body>
+</html>
