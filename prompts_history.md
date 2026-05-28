@@ -447,3 +447,35 @@ Currently the Human Engineering Manager at Martin-Baker with overall responsibil
 ```
 공개 url 머 저거 깃허브로 할 수 있는거임?
 ```
+
+---
+
+## 50.
+
+```
+We encountered an issue using your social login provider. Please try again or use our alternative sign-in or sign-up options.
+```
+
+---
+
+## 51.
+
+```
+[GitHub Personal Access Token — 보안상 본문 제외]
+```
+
+---
+
+## 52.
+
+```
+여기서 업데이트하면 계속 모바일에서도 업데이트되는거임?
+```
+
+---
+
+## 53.
+
+```
+지금 블루톤에 뻔적번쩍한데 심미적인요소가 약하다 해야되나, ui 아름답게 하고싶은데. 직관적이지만 센치하게, eng/kor 왔다갔다 할 수 있게 해주셈. 단색위주 흰색 베이지 검은색 ..
+```
